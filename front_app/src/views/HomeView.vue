@@ -1,7 +1,9 @@
 <template>
 
   <div class="home">
-    
+    <div v-for="one in tasks" :key="one">
+      <h1>{{one.description}}</h1>
+    </div>
     <h1 class="title">Todo List</h1>
     <hr>
     <div class="columns">
@@ -39,12 +41,12 @@
       <div class="column is-6">
         <h2 class="subtitle">To Do</h2>
         <div class="todo">
-          <div class="card"  v-for="task in tasks"  v-show="task.status === 'todo'" v-bind:key="task.id">
-            <div class="card-content" >
+          <div class="card"  v-for="task in tasks" v-bind:key="task.id">
+            <div class="card-content" v-if="task.status === 'todo'">
               {{ task.description }}
             </div>
             <footer class="card-footer">
-              <a class="card-footer-item">Done</a>
+              <a class="card-footer-item" @click="setStatus(task.id,'done')">Done</a>
             </footer>
           </div>
         </div>
@@ -52,10 +54,13 @@
       <div class="column is-6">
         <h2 class="subtitle">Done</h2>
         <div class="todo">
-          <div class="card" v-for="task in tasks"  v-show="task.statis==='done'" v-bind:key="task.id">
-            <div class="card-content" >
+          <div class="card" v-for="task in tasks"   v-bind:key="task.id" >
+            <div class="card-content" v-if="task.statis==='done'">
               {{ task.description }}
             </div>
+            <footer class="card-footer">
+              <a class="card-footer-item" @click="setStatus(task.id,'todo')">Done</a>
+            </footer>
           </div>
         </div>
       </div>
@@ -78,8 +83,8 @@ export default {
     this.getTasks();
   },
   methods: {
-    async getTasks() {
-      await axios({
+     async getTasks() {
+       await axios({
         method: 'get',
         url: "http://127.0.0.1:8000/api/tasks/",
         auth: {
@@ -114,6 +119,25 @@ export default {
       })).catch((error)=>{
         console.log(error)
       })
+    },
+    setStatus(task_id,status){
+      const task = this.tasks.filter(task=>task.id === task_id)[0]
+      const description = task.description
+        axios({
+         method: 'put',
+         url: "http://127.0.0.1:8000/api/tasks/" + task_id + '/',
+         headers: {
+           'Content-Type':'application/json',
+         },
+         data: {
+           status:status,
+           description:description
+         },
+         auth:{
+           username: 'admin',
+           password: '856320',
+         }
+       }).then(task.status=status) 
     }
   },
 };
